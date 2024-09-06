@@ -1,5 +1,5 @@
 import SwiftUI
-import Wavelike
+
 import OpenAI
 
 class ChatController: ObservableObject {
@@ -17,37 +17,71 @@ class ChatController: ObservableObject {
     }
     
     func getBotReply() {
-        let query = ChatQuery(
+        // Map `Message` to `ChatCompletionMessageParam`
+        let userMessages = self.messages.compactMap { message -> ChatQuery.ChatCompletionMessageParam? in
+            return ChatQuery.ChatCompletionMessageParam(
+                role: message.isUser ? .user : .assistant,
+                content: message.content
+            )
+        }
+        
+        // Add the system message at the beginning
+        if let systemMessage = ChatQuery.ChatCompletionMessageParam(
+            role: .assistant,
+            content: "Say pikachu after every sentence"
+        ) {
+            // Combine system message with user and bot messages
+            let allMessages = [systemMessage] + userMessages
             
-            messages: self.messages.map({
-                .init(role: .user, content: $0.content)!
-            }),
-            model: .gpt4_o
-        )
-        
-        
-        openAI?.chats(query: query) { result in
-            switch result {
-            case .success(let success):
-                guard let choice = success.choices.first else {
-                    return
+            // Create the ChatCompletion request with the system message + user/bot conversation history
+            let query = ChatQuery(
+                messages: allMessages,
+                model: "gpt-4"
+            )
+
+            // Send the query to OpenAI
+            openAI?.chats(query: query) { result in
+                switch result {
+                case .success(let success):
+                    guard let choice = success.choices.first else {
+                        return
+                    }
+                    
+                    // Extract string content from the message
+                    if let messageContent = choice.message.content?.string {
+                        DispatchQueue.main.async {
+                            self.messages.append(Message(content: messageContent, isUser: false))
+                        }
+                    }
+                case .failure(let failure):
+                    print(failure)
                 }
-                guard let message = choice.message.content?.string else { return }
-                DispatchQueue.main.async {
-                    self.messages.append(Message(content: message, isUser: false))
-                }
-            case .failure(let failure):
-                print(failure)
             }
+        } else {
+            print("Failed to create system message")
         }
     }
+
+
+
+
+
+
+    
+    
+    
 }
 
 struct Message {
     var ID: UUID = .init()
     var content: String
     var isUser: Bool
+    
+    func returnMessage() -> String {
+        return self.content
+    }
 }
+
 
 struct ContentView: View {
     
@@ -75,7 +109,6 @@ struct ContentView: View {
                     Rectangle()
                         .frame(width: self.bodyTapped ? 370 : 200, height: self.bodyTapped ? 680 : 100)
                         .foregroundColor(UIColors.body)
-                        .opacity(0.4)
                         .cornerRadius(20)
                         .onTapGesture {
                             withAnimation(.spring()) {
@@ -98,7 +131,7 @@ struct ContentView: View {
                         
                     }
                     .frame(width: self.bodyTapped ? 360 : 190, height: self.bodyTapped ? 540 : 90)
-                    .background(Color(UIColors.body).opacity(0.9))
+                    .background(Color(UIColors.body))
                     .cornerRadius(20)
                     .offset(y: self.bodyTapped ? -65 : 0)
                     .onTapGesture {
@@ -128,14 +161,9 @@ struct ContentView: View {
                         
                         
                         ZStack {
-                            Rectangle()
-                                .cornerRadius(4)
-                                .foregroundColor(Color(red: 183/255, green: 222/255, blue: 255/255))
-                                .frame(width: 30, height: 30)
-                            
-                            Text("->")
-                                .foregroundColor(.red)
-                                .font(.system(size: 24, weight: .bold))
+                            Image(systemName: "arrow.down.message.fill")
+                                .resizable()
+                                .frame(width: 30, height:30)
                         }
                         .offset(x: self.bodyTapped ? 165 : 70, y: self.bodyTapped ? 40 : 0)
                         .onTapGesture {
@@ -172,7 +200,7 @@ struct MessageView: View {
                         .padding()
                         .background(Color.blue) // User message is blue
                         .foregroundColor(Color.white)
-                        .cornerRadius(10)
+                        .cornerRadius(20)
                 }
             } else {
                 HStack {
@@ -180,7 +208,7 @@ struct MessageView: View {
                         .padding()
                         .background(Color.gray) // Bot message is gray
                         .foregroundColor(Color.white)
-                        .cornerRadius(10)
+                        .cornerRadius(20)
                     Spacer()
                 }
             }
