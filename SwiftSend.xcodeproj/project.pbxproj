@@ -12,8 +12,9 @@
 		961EF11B2C88CBB400E8A5DC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 961EF11A2C88CBB400E8A5DC /* Assets.xcassets */; };
 		961EF11E2C88CBB400E8A5DC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 961EF11D2C88CBB400E8A5DC /* Preview Assets.xcassets */; };
 		961EF1252C88CC4200E8A5DC /* UIColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961EF1242C88CC4200E8A5DC /* UIColors.swift */; };
-		961EF1322C88FAB000E8A5DC /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961EF1312C88FAB000E8A5DC /* File.swift */; };
+		961EF1322C88FAB000E8A5DC /* Env.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961EF1312C88FAB000E8A5DC /* Env.swift */; };
 		961EF1372C8901A800E8A5DC /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = 961EF1362C8901A800E8A5DC /* OpenAI */; };
+		9628E83A2C8F665B00C64B39 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9628E8392C8F665B00C64B39 /* ChatController.swift */; };
 		96AD8BCF2C89472F00381DAC /* .env in Resources */ = {isa = PBXBuildFile; fileRef = 96AD8BCE2C89472F00381DAC /* .env */; };
 /* End PBXBuildFile section */
 
@@ -24,7 +25,8 @@
 		961EF11A2C88CBB400E8A5DC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		961EF11D2C88CBB400E8A5DC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		961EF1242C88CC4200E8A5DC /* UIColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColors.swift; sourceTree = "<group>"; };
-		961EF1312C88FAB000E8A5DC /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		961EF1312C88FAB000E8A5DC /* Env.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Env.swift; sourceTree = "<group>"; };
+		9628E8392C8F665B00C64B39 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
 		96AD8BCE2C89472F00381DAC /* .env */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .env; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -81,7 +83,8 @@
 		961EF12C2C88E09B00E8A5DC /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				961EF1312C88FAB000E8A5DC /* File.swift */,
+				961EF1312C88FAB000E8A5DC /* Env.swift */,
+				9628E8392C8F665B00C64B39 /* ChatController.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -164,8 +167,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				961EF1192C88CBB100E8A5DC /* ContentView.swift in Sources */,
-				961EF1322C88FAB000E8A5DC /* File.swift in Sources */,
+				961EF1322C88FAB000E8A5DC /* Env.swift in Sources */,
 				961EF1172C88CBB100E8A5DC /* SwiftSendApp.swift in Sources */,
+				9628E83A2C8F665B00C64B39 /* ChatController.swift in Sources */,
 				961EF1252C88CC4200E8A5DC /* UIColors.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
