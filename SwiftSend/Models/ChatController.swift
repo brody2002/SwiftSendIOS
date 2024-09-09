@@ -34,6 +34,10 @@ struct JSONSchemaProperty: Codable {
 
 extension FunctionDeclaration {
     func toToolParam() -> ChatQuery.ChatCompletionToolParam {
+        
+        
+        
+        //IMPORTANT
         // Map JSONSchema to ChatCompletionToolParam.FunctionDefinition.FunctionParameters
         let functionParameters = ChatQuery.ChatCompletionToolParam.FunctionDefinition.FunctionParameters(
             type: .object, // Mapping your JSONSchema.type to the corresponding enum type

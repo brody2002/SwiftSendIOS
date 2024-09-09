@@ -10,7 +10,7 @@ struct Message {
 
 struct ContentView: View {
     @State private var apiKey: String? = nil
-    @State var bodyTapped: Bool = true
+    @State var bodyTapped: Bool = false
     @State var inputText: String = ""
     @State private var keyboardHeight: CGFloat = 0 // Adjusts App for when the Keyboard shows upp
     
@@ -67,15 +67,16 @@ struct ContentView: View {
                     
                     ZStack {
                         TextEditor(text: $inputText)
-                            .padding(.leading, 10)
-                            .padding(.top, 10)
-                            .padding(.bottom, 10)
-                            .padding(.trailing, 40)
-                            .background(Color.white)
-                            .cornerRadius(self.bodyTapped ? 10 : 20)
-                            .frame(width: self.bodyTapped ? 370 : 200, height: self.bodyTapped ? 120 : 40)
-                            .foregroundColor(.black)
-                            .shadow(radius: 5)
+                                .padding(.leading, 10)
+                                .padding(.top, 10)
+                                .padding(.bottom, 10)
+                                .padding(.trailing, 40)
+                                .background(Color.white)
+                                .cornerRadius(self.bodyTapped ? 10 : 20)
+                                .frame(width: self.bodyTapped ? 370 : 200, height: self.bodyTapped ? 120 : 40)
+                                .foregroundColor(self.bodyTapped ? .black : .clear)
+                                .shadow(radius: 5)
+                                
 
                         ZStack {
                             Image(systemName: "arrow.down.message.fill")
