@@ -55,11 +55,26 @@ class ChatController: ObservableObject {
     
     //LMM FUNCTIONS:
     
-    func getWeather(for location: String, completion: @escaping (String) -> Void) {
-            // Instead of making an actual API call, just return a hardcoded temperature
-            let pseudoTemperature = "The current temperature in \(location) is 10,000 degree."
-            completion(pseudoTemperature)
-        }
+    func getWeather(for location: String, unit: String? = "fahrenheit", completion: @escaping ([String: Any]) -> Void) {
+        // Default to "celsius" if unit is nil
+        let providedUnit = unit?.lowercased() ?? "fahrenheit"
+        
+        // Validate the unit:
+        let validUnits = ["celsius", "fahrenheit"]
+        let finalUnit = validUnits.contains(providedUnit) ? providedUnit : "celsius"
+        
+        // Create a structured weather response (as if retrieved from a real API)
+        let weatherResponse: [String: Any] = [
+            "location": location,
+            "temperature": 25, // Replace with real data if available
+            "unit": finalUnit
+        ]
+    
+        completion(weatherResponse)
+    }
+
+
+
     
     
     
@@ -87,7 +102,7 @@ class ChatController: ObservableObject {
 
         // Add the system message at the beginning
         if let systemMessage = ChatQuery.ChatCompletionMessageParam(
-            role: .assistant,
+            role: .system,
             content: "Say pikachu after every sentence"
         ) {
             // Combine system message with user and bot messages
@@ -148,16 +163,72 @@ class ChatController: ObservableObject {
                                 if let data = functionArgs.data(using: .utf8),
                                    let json = try? JSONSerialization.jsonObject(with: data, options: []),
                                    let argsDict = json as? [String: Any],
-                                   let location = argsDict["location"] as? String{
+                                   let location = argsDict["location"] as? String {
+                                    
+                                    // Correctly extract the unit as a String
+                                    let unit = argsDict["unit"] as? String
+                                    
                                     // Call the pseudo weather function
-                                    self.getWeather(for: location) { weatherResponse in
-                                        DispatchQueue.main.async {
-                                            self.messages.append(Message(content: weatherResponse, isUser: false))
+                                    self.getWeather(for: location, unit: unit) { weatherResponse in
+                                        // Extract data from the weatherResponse dictionary
+                                        if let location = weatherResponse["location"] as? String,
+                                           let temperature = weatherResponse["temperature"] as? Int,
+                                           let unit = weatherResponse["unit"] as? String {
+
+                                            // Format the message string
+                                            let weatherMessage = "The current temperature in \(location) is \(temperature) degrees \(unit)."
+
+                                            // Unwrap both system message and assistant message before using them in the array
+                                            if let followUpSystemMessage = ChatQuery.ChatCompletionMessageParam(
+                                                    role: .system,
+                                                    content: "Say pikachu after every sentence"
+                                                ),
+                                               let assistantMessageParam = ChatQuery.ChatCompletionMessageParam(
+                                                    role: .assistant,
+                                                    content: weatherMessage
+                                                ) {
+                                                
+                                                // Adds back the system instruction
+                                                let followUpQuery = ChatQuery(
+                                                    messages: [
+                                                        followUpSystemMessage,  // Unwrapped system message
+                                                        assistantMessageParam   // Unwrapped assistant message
+                                                    ],
+                                                    model: "gpt-4"
+                                                )
+
+                                                self.openAI?.chats(query: followUpQuery) { followUpResult in
+                                                    switch followUpResult {
+                                                    case .success(let followUpSuccess):
+                                                        if let followUpChoice = followUpSuccess.choices.first {
+                                                            // Safely unwrap the content to make sure it's non-optional before using it
+                                                            if let content = followUpChoice.message.content, case let .string(messageContent) = content {
+                                                                            // Handle the string content
+                                                                            DispatchQueue.main.async {
+                                                                                self.messages.append(Message(content: messageContent, isUser: false))
+                                                                            }
+                                                            } else {
+                                                                // Handle the case where content is nil (optional)
+                                                                DispatchQueue.main.async {
+                                                                    self.messages.append(Message(content: "No content available", isUser: false))
+                                                                }
+                                                            }
+                                                        }
+                                                    case .failure(let followUpFailure):
+                                                        print(followUpFailure)
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            // Handle the case where the dictionary doesn't contain expected values
+                                            DispatchQueue.main.async {
+                                                self.messages.append(Message(content: "Failed to retrieve weather data.", isUser: false))
+                                            }
                                         }
                                     }
                                 }
                             } else {
-                                // If it's a different function call, handle it here (you can add custom logic)
+                                // If it's a different function call, handle it here (add custom logic)
                                 print("Unhandled function call: \(functionName)")
                                 DispatchQueue.main.async {
                                     self.messages.append(Message(content: "Function call for \(functionName) not handled.", isUser: false))
@@ -179,6 +250,7 @@ class ChatController: ObservableObject {
             print("Failed to create system message")
         }
     }
+
 }
 
 struct Message {
