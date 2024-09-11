@@ -78,6 +78,7 @@ class ChatController: ObservableObject {
     
     
     func getWeather(for location: String, unit: String? = "fahrenheit", completion: @escaping ([String: Any]) -> Void) {
+        print("Called getWeather()")
         // Default to "celsius" if unit is nil
         let providedUnit = unit?.lowercased() ?? "fahrenheit"
         
@@ -94,6 +95,34 @@ class ChatController: ObservableObject {
     
         completion(weatherResponse)
     }
+    
+    func getSurf(for location: String, coordinates: String, completion: @escaping ([String: Any]) -> Void) {
+        // Default coordinates in case of invalid input
+        print("getSurf CALLED")
+        let defaultCoordinates = "1002.33,33"
+        var validCoordinates = coordinates
+        
+        // Split the coordinates string by comma
+        let components = coordinates.split(separator: ",").map { String($0) }
+        
+        // Validate that we have exactly 2 components and they can be converted to Double
+        if components.count != 2 || components.contains(where: { Double($0) == nil }) {
+            // If invalid, use default coordinates
+            validCoordinates = defaultCoordinates
+        }
+        
+        // Create the weather response
+        let weatherResponse: [String: Any] = [
+            "coordinates": validCoordinates,
+            "location": location,
+            "waveHeight" : "3ft waves"
+        ]
+        
+        // Call the completion handler with the weather response
+        completion(weatherResponse)
+    }
+
+
 
 
 
@@ -115,6 +144,7 @@ class ChatController: ObservableObject {
 
     func getBotReply() {
         // Map `Message` to `ChatCompletionMessageParam`
+        let chatPrompt = "Say pikachu after every sentence"
         let userMessages = self.messages.compactMap { message -> ChatQuery.ChatCompletionMessageParam? in
             return ChatQuery.ChatCompletionMessageParam(
                 role: message.isUser ? .user : .assistant,
@@ -125,7 +155,7 @@ class ChatController: ObservableObject {
         // Add the system message at the beginning
         if let systemMessage = ChatQuery.ChatCompletionMessageParam(
             role: .system,
-            content: "Say pikachu after every sentence"
+            content: chatPrompt
         ) {
             // Combine system message with user and bot messages
             let allMessages = [systemMessage] + userMessages
@@ -137,6 +167,7 @@ class ChatController: ObservableObject {
                     description: "Get the current weather in a given location",
                     parameters: JSONSchema(
                         type: "object",
+                        //Inputs (some are optional)
                         properties: [
                             "location": JSONSchemaProperty(
                                 type: "string",
@@ -148,6 +179,26 @@ class ChatController: ObservableObject {
                                 description: "The temperature unit to use",
                                 enumValues: ["celsius", "fahrenheit"]
                             )
+                        ],
+                        required: ["location"]
+                    )
+                ),
+                
+                
+                
+                FunctionDeclaration(
+                    name: "get_surf_conditions",
+                    description: "Get the surf condition of a given the location",
+                    parameters: JSONSchema(
+                        type: "object",
+                        //Inputs (some are optional)
+                        properties: [
+                            "location": JSONSchemaProperty(
+                                type: "string",
+                                description: "The city and state, e.g., San Francisco, CA",
+                                enumValues: nil
+                            )
+                            
                         ],
                         required: ["location"]
                     )
@@ -182,7 +233,76 @@ class ChatController: ObservableObject {
 
                             // Handle the specific function calls
                             if functionName == "get_current_weather" {
-                                
+                                // Parse the arguments from JSON
+                                    if let data = functionArgs.data(using: .utf8),
+                                       let json = try? JSONSerialization.jsonObject(with: data, options: []),
+                                       let argsDict = json as? [String: Any],
+                                       let location = argsDict["location"] as? String {
+                                        
+                                        let unit = argsDict["unit"] as? String
+                                        
+                                        // Call weather function
+                                        self.getWeather(for: location, unit: unit) { weatherResponse in
+                                            // Extract data from the weatherResponse dictionary
+                                            if let location = weatherResponse["location"] as? String,
+                                               let temperature = weatherResponse["temperature"] as? Int,
+                                               let unit = weatherResponse["unit"] as? String {
+                                                
+                                                // Format the message string
+                                                let weatherMessage = "The current temperature in \(location) is \(temperature) degrees \(unit)."
+                                                
+                                                // Unwrap both system message and assistant message before using them in the array
+                                                if let followUpSystemMessage = ChatQuery.ChatCompletionMessageParam(
+                                                        role: .system,
+                                                        content: chatPrompt
+                                                    ),
+                                                   let assistantMessageParam = ChatQuery.ChatCompletionMessageParam(
+                                                        role: .assistant,
+                                                        content: weatherMessage
+                                                    ) {
+                                                    
+                                                    // Adds back the system instruction
+                                                    let followUpQuery = ChatQuery(
+                                                        messages: [
+                                                            followUpSystemMessage,  // Unwrapped system message
+                                                            assistantMessageParam   // Unwrapped assistant message
+                                                        ],
+                                                        model: "gpt-4"
+                                                    )
+                                                    
+                                                    self.openAI?.chats(query: followUpQuery) { followUpResult in
+                                                        switch followUpResult {
+                                                        case .success(let followUpSuccess):
+                                                            if let followUpChoice = followUpSuccess.choices.first {
+                                                                // Safely unwrap the content to make sure it's non-optional before using it
+                                                                if let content = followUpChoice.message.content, case let .string(messageContent) = content {
+                                                                    // Handle the string content
+                                                                    DispatchQueue.main.async {
+                                                                        self.messages.append(Message(content: messageContent, isUser: false))
+                                                                    }
+                                                                } else {
+                                                                    // Handle the case where content is nil (optional)
+                                                                    DispatchQueue.main.async {
+                                                                        self.messages.append(Message(content: "No content available", isUser: false))
+                                                                    }
+                                                                }
+                                                            }
+                                                        case .failure(let followUpFailure):
+                                                            print(followUpFailure)
+                                                        }
+                                                    }
+                                                }
+                                        } else {
+                                            // Handle the case where the dictionary doesn't contain expected values
+                                            print("unhandled function call")
+//                                            DispatchQueue.main.async {
+//                                                self.messages.append(Message(content: "Failed to retrieve weather data.", isUser: false))
+//                                            }
+                                        }
+                                    }
+                                }
+                            } 
+                            if functionName == "get_surf_conditions"{
                                 // Parse the arguments from JSON
                                 if let data = functionArgs.data(using: .utf8),
                                    let json = try? JSONSerialization.jsonObject(with: data, options: []),
@@ -190,22 +310,21 @@ class ChatController: ObservableObject {
                                    let location = argsDict["location"] as? String {
                                     
                                     
-                                    let unit = argsDict["unit"] as? String
-                                    
+                                    let coordinates = argsDict["coordinates"] as? String
+                                   
                                     //Call weather function
-                                    self.getWeather(for: location, unit: unit) { weatherResponse in
+                                    self.getSurf(for: location, coordinates: coordinates ?? "100, 300") { surfGet in
                                         // Extract data from the weatherResponse dictionary
-                                        if let location = weatherResponse["location"] as? String,
-                                           let temperature = weatherResponse["temperature"] as? Int,
-                                           let unit = weatherResponse["unit"] as? String {
+                                        if let location = surfGet["location"] as? String,
+                                           let waveHeight = surfGet["waveHeight"] as? String {
 
                                             // Format the message string
-                                            let weatherMessage = "The current temperature in \(location) is \(temperature) degrees \(unit)."
+                                            let weatherMessage = "The current surf conditions in \(location) with a wave height of \(waveHeight)."
 
                                             // Unwrap both system message and assistant message before using them in the array
                                             if let followUpSystemMessage = ChatQuery.ChatCompletionMessageParam(
                                                     role: .system,
-                                                    content: "Say pikachu after every sentence"
+                                                    content: chatPrompt
                                                 ),
                                                let assistantMessageParam = ChatQuery.ChatCompletionMessageParam(
                                                     role: .assistant,
@@ -246,17 +365,18 @@ class ChatController: ObservableObject {
                                         } else {
                                             // Handle the case where the dictionary doesn't contain expected values
                                             DispatchQueue.main.async {
-                                                self.messages.append(Message(content: "Failed to retrieve weather data.", isUser: false))
+                                                self.messages.append(Message(content: "Failed to retrieve surf data.", isUser: false))
                                             }
                                         }
                                     }
                                 }
-                            } else {
+                                
+                            }else {
                                 // If it's a different function call, handle it here (add custom logic)
                                 print("Unhandled function call: \(functionName)")
-                                DispatchQueue.main.async {
-                                    self.messages.append(Message(content: "Function call for \(functionName) not handled.", isUser: false))
-                                }
+//                                DispatchQueue.main.async {
+//                                    self.messages.append(Message(content: "Function call for \(functionName) not handled.", isUser: false))
+//                                }
                             }
                         } else if let content = assistantMessage.content {
                             // Handle regular assistant message (fallback if no function call or content available)

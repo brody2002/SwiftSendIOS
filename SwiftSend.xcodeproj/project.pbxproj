@@ -15,6 +15,8 @@
 		961EF1322C88FAB000E8A5DC /* Env.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961EF1312C88FAB000E8A5DC /* Env.swift */; };
 		961EF1372C8901A800E8A5DC /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = 961EF1362C8901A800E8A5DC /* OpenAI */; };
 		9628E83A2C8F665B00C64B39 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9628E8392C8F665B00C64B39 /* ChatController.swift */; };
+		964313E12C920C2800D6DCBD /* OpenMeteoSdk in Frameworks */ = {isa = PBXBuildFile; productRef = 964313E02C920C2800D6DCBD /* OpenMeteoSdk */; };
+		964313E32C920C6F00D6DCBD /* SurfTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964313E22C920C6F00D6DCBD /* SurfTestView.swift */; };
 		96AD8BCF2C89472F00381DAC /* .env in Resources */ = {isa = PBXBuildFile; fileRef = 96AD8BCE2C89472F00381DAC /* .env */; };
 /* End PBXBuildFile section */
 
@@ -27,6 +29,7 @@
 		961EF1242C88CC4200E8A5DC /* UIColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColors.swift; sourceTree = "<group>"; };
 		961EF1312C88FAB000E8A5DC /* Env.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Env.swift; sourceTree = "<group>"; };
 		9628E8392C8F665B00C64B39 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
+		964313E22C920C6F00D6DCBD /* SurfTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfTestView.swift; sourceTree = "<group>"; };
 		96AD8BCE2C89472F00381DAC /* .env */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .env; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -35,6 +38,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				964313E12C920C2800D6DCBD /* OpenMeteoSdk in Frameworks */,
 				961EF1372C8901A800E8A5DC /* OpenAI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -68,6 +72,7 @@
 				96AD8BCE2C89472F00381DAC /* .env */,
 				961EF11A2C88CBB400E8A5DC /* Assets.xcassets */,
 				961EF11C2C88CBB400E8A5DC /* Preview Content */,
+				964313E22C920C6F00D6DCBD /* SurfTestView.swift */,
 			);
 			path = SwiftSend;
 			sourceTree = "<group>";
@@ -107,6 +112,7 @@
 			name = SwiftSend;
 			packageProductDependencies = (
 				961EF1362C8901A800E8A5DC /* OpenAI */,
+				964313E02C920C2800D6DCBD /* OpenMeteoSdk */,
 			);
 			productName = SwiftSend;
 			productReference = 961EF1132C88CBB100E8A5DC /* SwiftSend.app */;
@@ -138,6 +144,7 @@
 			mainGroup = 961EF10A2C88CBB100E8A5DC;
 			packageReferences = (
 				961EF1352C8901A800E8A5DC /* XCRemoteSwiftPackageReference "OpenAI" */,
+				964313DF2C920C2800D6DCBD /* XCRemoteSwiftPackageReference "sdk" */,
 			);
 			productRefGroup = 961EF1142C88CBB100E8A5DC /* Products */;
 			projectDirPath = "";
@@ -168,6 +175,7 @@
 			files = (
 				961EF1192C88CBB100E8A5DC /* ContentView.swift in Sources */,
 				961EF1322C88FAB000E8A5DC /* Env.swift in Sources */,
+				964313E32C920C6F00D6DCBD /* SurfTestView.swift in Sources */,
 				961EF1172C88CBB100E8A5DC /* SwiftSendApp.swift in Sources */,
 				9628E83A2C8F665B00C64B39 /* ChatController.swift in Sources */,
 				961EF1252C88CC4200E8A5DC /* UIColors.swift in Sources */,
@@ -386,6 +394,14 @@
 				minimumVersion = 0.3.0;
 			};
 		};
+		964313DF2C920C2800D6DCBD /* XCRemoteSwiftPackageReference "sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/open-meteo/sdk.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -393,6 +409,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 961EF1352C8901A800E8A5DC /* XCRemoteSwiftPackageReference "OpenAI" */;
 			productName = OpenAI;
+		};
+		964313E02C920C2800D6DCBD /* OpenMeteoSdk */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 964313DF2C920C2800D6DCBD /* XCRemoteSwiftPackageReference "sdk" */;
+			productName = OpenMeteoSdk;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

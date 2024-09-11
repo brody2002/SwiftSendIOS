@@ -2,7 +2,7 @@ import SwiftUI
 import OpenAI
 import Combine
 
-struct Message {
+struct Message : Equatable {
     var ID: UUID = .init()
     var content: String
     var isUser: Bool
@@ -44,9 +44,22 @@ struct ContentView: View {
                     VStack(alignment: .leading) {
                         if self.bodyTapped {
                             ScrollView {
-                                ForEach(chatController.messages, id: \.ID) { message in // Access messages through instance
+                                ForEach(chatController.messages, id: \.ID) { message in
                                     MessageView(message: message)
                                         .padding(5)
+                                         // Differentiate by color
+                                        .cornerRadius(20)
+                                        .transition(message.isUser ? .move(edge: .trailing) : .move(edge: .leading)) // Transition based on the message type
+                                        .animation(.spring(), value: chatController.messages) // Animate the changes
+                                        .onAppear {
+                                            if message.isUser {
+                                                print("user")
+                                                print(message)
+                                            } else {
+                                                print("bot")
+                                                print(message)
+                                            }
+                                        }
                                 }
                             }
                             Divider()
@@ -85,8 +98,10 @@ struct ContentView: View {
                         }
                         .offset(x: self.bodyTapped ? 165 : 70, y: self.bodyTapped ? 40 : 0)
                         .onTapGesture {
-                            chatController.sendNewMessage(content: inputText)
-                            inputText = "" // Clear the input field
+                            withAnimation(.spring()) {
+                                chatController.sendNewMessage(content: inputText)
+                                inputText = "" // Clear the input field
+                            }
                             UIApplication.shared.endEditing()
                         }
                     }
@@ -172,7 +187,7 @@ extension Publishers {
             .eraseToAnyPublisher()
     }
 }
-
+// Keyboard extension for transitioning from no longer typing
 extension UIApplication {
     func endEditing() {
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
