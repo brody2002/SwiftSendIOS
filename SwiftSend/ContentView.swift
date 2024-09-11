@@ -53,11 +53,13 @@ struct ContentView: View {
                                         .animation(.spring(), value: chatController.messages) // Animate the changes
                                         .onAppear {
                                             if message.isUser {
-                                                print("user")
+                                                print("\n")
                                                 print(message)
+                                                print("\n")
                                             } else {
-                                                print("bot")
+                                                print("\n\n")
                                                 print(message)
+                                                print("\n\n")
                                             }
                                         }
                                 }

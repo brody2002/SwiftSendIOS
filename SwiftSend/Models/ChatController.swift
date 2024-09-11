@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import OpenAI
+import CoreLocation
 
 
 // Define the FunctionDeclaration and JSONSchema structures
@@ -62,6 +63,25 @@ extension FunctionDeclaration {
     }
 }
 
+func convertToCoordinates(address: String, completion: @escaping (_ coordinates: CLLocationCoordinate2D?, _ error: Error?) -> Void) {
+    let geocoder = CLGeocoder()
+    
+    geocoder.geocodeAddressString(address) { (placemarks, error) in
+        if let error = error {
+            print("Error: \(error.localizedDescription)")
+            completion(nil, error)
+            return
+        }
+        
+        if let placemarks = placemarks, let location = placemarks.first?.location {
+            let coordinates = location.coordinate
+            completion(coordinates, nil)
+        } else {
+            completion(nil, NSError(domain: "GeocodingError", code: -1, userInfo: [NSLocalizedDescriptionKey: "No location found"]))
+        }
+    }
+}
+
 
 class ChatController: ObservableObject {
     @Published var openAI: OpenAI?
@@ -96,31 +116,72 @@ class ChatController: ObservableObject {
         completion(weatherResponse)
     }
     
-    func getSurf(for location: String, coordinates: String, completion: @escaping ([String: Any]) -> Void) {
-        // Default coordinates in case of invalid input
-        print("getSurf CALLED")
-        let defaultCoordinates = "1002.33,33"
-        var validCoordinates = coordinates
+    func getSurf(for location: String, completion: @escaping ([String: Any]) -> Void) {
         
-        // Split the coordinates string by comma
-        let components = coordinates.split(separator: ",").map { String($0) }
-        
-        // Validate that we have exactly 2 components and they can be converted to Double
-        if components.count != 2 || components.contains(where: { Double($0) == nil }) {
-            // If invalid, use default coordinates
-            validCoordinates = defaultCoordinates
+        // Location -> Coordinates
+        convertToCoordinates(address: location) { (coordinates, error) in
+            if let coordinates = coordinates {
+                let Lat = coordinates.latitude
+                let Long = coordinates.longitude
+                print("Latitude: \(Lat), Longitude: \(Long)")
+                
+                // Make SurfAPI immutable
+                let SurfAPI = SurfAPI(latitude: Lat, longitude: Long)
+                
+                // Use Task for handling async code
+                Task {
+                    do {
+                            // Fetch the weather data
+                            if let data = try await SurfAPI.fetchWeatherData() {
+                                // After fetching weather data, create the response using fetched data
+                                
+                                let weatherResponse: [String: Any] = [
+                                    "location": location,
+                                    "latitude": Lat,
+                                    "longitude": Long,
+                                    "waveHeightMax": data.daily.waveHeightMax.first ?? "No data",
+                                    "waveDirectionDominant": data.daily.waveDirectionDominant.first ?? "No data",
+                                    "wavePeriodMax": data.daily.wavePeriodMax.first ?? "No data",
+                                    "windWaveHeightMax": data.daily.windWaveHeightMax.first ?? "No data",
+                                    "windWaveDirectionDominant": data.daily.windWaveDirectionDominant.first ?? "No data",
+                                    "windWavePeriodMax": data.daily.windWavePeriodMax.first ?? "No data",
+                                    "windWavePeakPeriodMax": data.daily.windWavePeakPeriodMax.first ?? "No data",
+                                    "swellWaveHeightMax": data.daily.swellWaveHeightMax.first ?? "No data",
+                                    "swellWaveDirectionDominant": data.daily.swellWaveDirectionDominant.first ?? "No data",
+                                    "swellWavePeriodMax": data.daily.swellWavePeriodMax.first ?? "No data",
+                                    "swellWavePeakPeriodMax": data.daily.swellWavePeakPeriodMax.first ?? "No data"
+                                ]
+                                print(weatherResponse)
+                                
+                                // Switch back to the main thread for completion
+                                DispatchQueue.main.async {
+                                    completion(weatherResponse)
+                                }
+                            } else {
+                                // Handle case where no data is returned
+                                DispatchQueue.main.async {
+                                    print("No data available")
+                                    completion(["error": "No data available"])
+                                }
+                            }
+                        } catch {
+                            // Handle error
+                            DispatchQueue.main.async {
+                                print("Unable to fetch weather data: \(error)")
+                                completion(["error": "Unable to fetch weather data"])
+                            }
+                        }
+                }
+                
+            } else if let error = error {
+                print("Failed to get coordinates: \(error.localizedDescription)")
+                completion(["error": "Failed to get coordinates: \(error.localizedDescription)"])
+            }
         }
-        
-        // Create the weather response
-        let weatherResponse: [String: Any] = [
-            "coordinates": validCoordinates,
-            "location": location,
-            "waveHeight" : "3ft waves"
-        ]
-        
-        // Call the completion handler with the weather response
-        completion(weatherResponse)
     }
+
+
+
 
 
 
@@ -144,7 +205,7 @@ class ChatController: ObservableObject {
 
     func getBotReply() {
         // Map `Message` to `ChatCompletionMessageParam`
-        let chatPrompt = "Say pikachu after every sentence"
+        let chatPrompt = "You are a helpful chatbot assistant that tells users mainly surf conditions. For directions say give numeric value as well as the direction its closest facing to. But keep the numberic values. Keep everything very short and concise. Avoid wordy vocabulary and mention maybe 3-4 most important bits of info"
         let userMessages = self.messages.compactMap { message -> ChatQuery.ChatCompletionMessageParam? in
             return ChatQuery.ChatCompletionMessageParam(
                 role: message.isUser ? .user : .assistant,
@@ -309,23 +370,47 @@ class ChatController: ObservableObject {
                                    let argsDict = json as? [String: Any],
                                    let location = argsDict["location"] as? String {
                                     
-                                    
-                                    let coordinates = argsDict["coordinates"] as? String
                                    
                                     //Call weather function
-                                    self.getSurf(for: location, coordinates: coordinates ?? "100, 300") { surfGet in
+                                    self.getSurf(for: location) { surfGet in
                                         // Extract data from the weatherResponse dictionary
                                         if let location = surfGet["location"] as? String,
-                                           let waveHeight = surfGet["waveHeight"] as? String {
+                                           let waveHeight = surfGet["waveHeightMax"] as? Float,
+                                           let waveDirection = surfGet["waveDirectionDominant"] as? Float,
+                                           let wavePeriod = surfGet["wavePeriodMax"] as? Float,
+                                           let windWaveHeight = surfGet["windWaveHeightMax"] as? Float,
+                                           let windWaveDirection = surfGet["windWaveDirectionDominant"] as? Float,
+                                           let windWavePeriod = surfGet["windWavePeriodMax"] as? Float,
+                                           let windWavePeakPeriod = surfGet["windWavePeakPeriodMax"] as? Float,
+                                           let swellWaveHeight = surfGet["swellWaveHeightMax"] as? Float,
+                                           let swellWaveDirection = surfGet["swellWaveDirectionDominant"] as? Float,
+                                           let swellWavePeriod = surfGet["swellWavePeriodMax"] as? Float,
+                                           let swellWavePeakPeriod = surfGet["swellWavePeakPeriodMax"] as? Float {
 
-                                            // Format the message string
-                                            let weatherMessage = "The current surf conditions in \(location) with a wave height of \(waveHeight)."
 
-                                            // Unwrap both system message and assistant message before using them in the array
+                                            // Ouput Message
+                                            let weatherMessage =
+                                                """
+                                                Here are the surf conditions for \(location):
+                                                - Max Wave Height: \(waveHeight)ft
+                                                - Wave Direction: \(waveDirection)°
+                                                - Wave Period: \(wavePeriod)s
+                                                - Max Wind Wave Height: \(windWaveHeight)ft
+                                                - Wind Wave Direction: \(windWaveDirection)°
+                                                - Wind Wave Period: \(windWavePeriod)s
+                                                - Wind Wave Peak Period: \(windWavePeakPeriod)s
+                                                - Max Swell Wave Height: \(swellWaveHeight)ft
+                                                - Swell Wave Direction: \(swellWaveDirection)°
+                                                - Swell Wave Period: \(swellWavePeriod)s
+                                                - Swell Wave Peak Period: \(swellWavePeakPeriod)s
+                                                """
+                                            print(weatherMessage)
+                                            // Reinforce chatprompt
                                             if let followUpSystemMessage = ChatQuery.ChatCompletionMessageParam(
                                                     role: .system,
-                                                    content: chatPrompt
+                                                    content: chatPrompt + "Keep the rest of the information in mind if asked later about it."
                                                 ),
+                                               //Your message
                                                let assistantMessageParam = ChatQuery.ChatCompletionMessageParam(
                                                     role: .assistant,
                                                     content: weatherMessage
