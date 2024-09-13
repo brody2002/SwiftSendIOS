@@ -18,6 +18,7 @@
 		964313E12C920C2800D6DCBD /* OpenMeteoSdk in Frameworks */ = {isa = PBXBuildFile; productRef = 964313E02C920C2800D6DCBD /* OpenMeteoSdk */; };
 		964313E52C9223EE00D6DCBD /* SurfAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964313E42C9223EE00D6DCBD /* SurfAPI.swift */; };
 		964313E72C93A74E00D6DCBD /* StormGlassAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964313E62C93A74E00D6DCBD /* StormGlassAPI.swift */; };
+		964313E92C94BCD800D6DCBD /* WaveAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964313E82C94BCD800D6DCBD /* WaveAnimation.swift */; };
 		96AD8BCF2C89472F00381DAC /* .env in Resources */ = {isa = PBXBuildFile; fileRef = 96AD8BCE2C89472F00381DAC /* .env */; };
 /* End PBXBuildFile section */
 
@@ -32,6 +33,7 @@
 		9628E8392C8F665B00C64B39 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
 		964313E42C9223EE00D6DCBD /* SurfAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfAPI.swift; sourceTree = "<group>"; };
 		964313E62C93A74E00D6DCBD /* StormGlassAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StormGlassAPI.swift; sourceTree = "<group>"; };
+		964313E82C94BCD800D6DCBD /* WaveAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveAnimation.swift; sourceTree = "<group>"; };
 		96AD8BCE2C89472F00381DAC /* .env */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .env; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -93,6 +95,7 @@
 				9628E8392C8F665B00C64B39 /* ChatController.swift */,
 				964313E42C9223EE00D6DCBD /* SurfAPI.swift */,
 				964313E62C93A74E00D6DCBD /* StormGlassAPI.swift */,
+				964313E82C94BCD800D6DCBD /* WaveAnimation.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -177,6 +180,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				964313E52C9223EE00D6DCBD /* SurfAPI.swift in Sources */,
+				964313E92C94BCD800D6DCBD /* WaveAnimation.swift in Sources */,
 				961EF1192C88CBB100E8A5DC /* ContentView.swift in Sources */,
 				961EF1322C88FAB000E8A5DC /* Env.swift in Sources */,
 				961EF1172C88CBB100E8A5DC /* SwiftSendApp.swift in Sources */,

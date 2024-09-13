@@ -143,7 +143,15 @@ class ChatController: ObservableObject {
                         if let type = entry["type"] as? String, type == tideType,
                            let time = entry["time"] as? String,
                            let height = entry["height"] as? Double {
-                            return (time: time, height: height)  // Return a tuple with time and height
+                            
+                            
+                                // Creating substring to obtain the correct date format
+                                let heightFt = height * 3.28084
+                                let startIndex = time.index(time.startIndex, offsetBy: 11)
+                                let endIndex = time.index(time.startIndex, offsetBy: 16)
+                                let substring = String(time[startIndex..<endIndex])
+                                
+                            return (time: substring, height: heightFt)
                         }
                         return nil  // If the type doesn't match, or if time/height is missing, return nil
                     }
@@ -168,10 +176,10 @@ class ChatController: ObservableObject {
                                
                                // Create the weather response using the fetched data and tide data
                                let weatherResponse: [String: Any] = [
-                                   "lowTide1": lowTides.first.map { "\($0.time) - Height: \($0.height)" } ?? "No data", // First low tide (time and height)
-                                   "lowTide2": lowTides.count > 1 ? "\(lowTides[1].time) - Height: \(lowTides[1].height)" : "No data", // Second low tide (time and height)
-                                   "highTide1": highTides.first.map { "\($0.time) - Height: \($0.height)" } ?? "No data", // First high tide (time and height)
-                                   "highTide2": highTides.count > 1 ? "\(highTides[1].time) - Height: \(highTides[1].height)" : "No data", // Second high tide (time and height)
+                                "lowTide1": lowTides.first.map { "\($0.time) - Height: \($0.height)ft" } ?? "No data", // First low tide (time and height)
+                                   "lowTide2": lowTides.count > 1 ? "\(lowTides[1].time) - Height: \(lowTides[1].height)ft" : "No data", // Second low tide (time and height)
+                                   "highTide1": highTides.first.map { "\($0.time) - Height: \($0.height)ft" } ?? "No data", // First high tide (time and height)
+                                   "highTide2": highTides.count > 1 ? "\(highTides[1].time) - Height: \(highTides[1].height)ft" : "No data", // Second high tide (time and height)
                                     "location": location,
                                     "latitude": Lat,
                                     "longitude": Long,
@@ -189,7 +197,7 @@ class ChatController: ObservableObject {
                                 ]
                                 
                                 
-                                print(weatherResponse)
+//                                print(weatherResponse)
                                 
                                 // Switch back to the main thread for completion
                                 DispatchQueue.main.async {
@@ -238,7 +246,10 @@ class ChatController: ObservableObject {
     func sendNewMessage(content: String) {
         let userMessage = Message(content: content, isUser: true)
         self.messages.append(userMessage)
-        getBotReply()
+        withAnimation{
+            getBotReply()
+        }
+       
     }
 
     func getBotReply() {
@@ -376,8 +387,10 @@ class ChatController: ObservableObject {
                                                                 // Safely unwrap the content to make sure it's non-optional before using it
                                                                 if let content = followUpChoice.message.content, case let .string(messageContent) = content {
                                                                     // Handle the string content
-                                                                    DispatchQueue.main.async {
-                                                                        self.messages.append(Message(content: messageContent, isUser: false))
+                                                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.9)){
+                                                                        DispatchQueue.main.async {
+                                                                            self.messages.append(Message(content: messageContent, isUser: false))
+                                                                        }
                                                                     }
                                                                 } else {
                                                                     // Handle the case where content is nil (optional)
@@ -449,12 +462,16 @@ class ChatController: ObservableObject {
                                                 - Swell Wave Direction: \(swellWaveDirection)°
                                                 - Swell Wave Period: \(swellWavePeriod)s
                                                 - Swell Wave Peak Period: \(swellWavePeakPeriod)s
-                                                - Low Tide 1: \(lowTide1) meters
-                                                - Low Tide 1: \(lowTide2) meters
-                                                - High Tide 1: \(highTide1) meters
-                                                - High Tide 2: \(highTide2) meters
+                                                - Low Tide 1: \(lowTide1) ft
+                                                - Low Tide 1: \(lowTide2) ft
+                                                - High Tide 1: \(highTide1) ft
+                                                - High Tide 2: \(highTide2) ft
                                                 """
-                                            print(weatherMessage)
+                                            print("\n\n\(weatherMessage)\n\n")
+                                            
+                                            
+                                            
+                                            
                                             // Reinforce chatprompt
                                             if let followUpSystemMessage = ChatQuery.ChatCompletionMessageParam(
                                                     role: .system,
@@ -482,13 +499,18 @@ class ChatController: ObservableObject {
                                                             // Safely unwrap the content to make sure it's non-optional before using it
                                                             if let content = followUpChoice.message.content, case let .string(messageContent) = content {
                                                                             // Handle the string content
-                                                                            DispatchQueue.main.async {
-                                                                                self.messages.append(Message(content: messageContent, isUser: false))
-                                                                            }
+                                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.9)){
+                                                                    
+                                                                    DispatchQueue.main.async {
+                                                                        self.messages.append(Message(content: messageContent, isUser: false))
+                                                                    }
+                                                                }
                                                             } else {
                                                                 // Handle the case where content is nil (optional)
-                                                                DispatchQueue.main.async {
-                                                                    self.messages.append(Message(content: "No content available", isUser: false))
+                                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.9)){
+                                                                    DispatchQueue.main.async {
+                                                                        self.messages.append(Message(content: "No content available", isUser: false))
+                                                                    }
                                                                 }
                                                             }
                                                         }
@@ -515,9 +537,15 @@ class ChatController: ObservableObject {
                             }
                         } else if let content = assistantMessage.content {
                             // Handle regular assistant message (fallback if no function call or content available)
-                            DispatchQueue.main.async {
-                                self.messages.append(Message(content: content, isUser: false))
-                            }
+                            
+                                print("default talk")
+                                
+                                DispatchQueue.main.async {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.9)){
+                                        self.messages.append(Message(content: content, isUser: false))
+                                    }
+                                }
+                            
                         }
                     }
 

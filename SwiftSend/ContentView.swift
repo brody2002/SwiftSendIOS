@@ -16,6 +16,11 @@ struct ContentView: View {
     
     @StateObject var chatController = ChatController(apiKey: "YOUR_API_KEY") // Use StateObject to observe changes
     private var cancellable: AnyCancellable?
+    
+    
+    @State var percent = 20.0
+    @State var waveOffset = Angle(degrees: 0)
+    
 
     var body: some View {
         ZStack {
@@ -26,6 +31,17 @@ struct ContentView: View {
                         self.bodyTapped = false
                     }
                 }
+            
+            
+            Wave(offSet: Angle(degrees: waveOffset.degrees), percent: percent)
+                .fill(Color.blue)
+                .ignoresSafeArea(.all)
+                .onAppear {
+                            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                                
+                                waveOffset = Angle(degrees: 360)
+                            }
+                        }
 
             VStack {
                 Text("SwiftSend")
@@ -41,7 +57,7 @@ struct ContentView: View {
                         .foregroundColor(UIColors.body)
                         .cornerRadius(20)
 
-                    VStack(alignment: .leading) {
+                    VStack() {
                         if self.bodyTapped {
                             ScrollView {
                                 ForEach(chatController.messages, id: \.ID) { message in
@@ -50,9 +66,8 @@ struct ContentView: View {
                                         .padding(5)
                                          // Differentiate by color
                                         .cornerRadius(20)
-                                        .transition(message.isUser ? .move(edge: .bottom) : .move(edge: .leading)) // Transition based on the message type
-                                        .animation(.spring(), value: chatController.messages) // Animate the changes
-                                        
+                                        .transition(message.isUser ? .move(edge: .trailing) : .move(edge: .leading))
+//                                        
                                 }
                             }
                             Divider()
@@ -91,7 +106,9 @@ struct ContentView: View {
                         }
                         .offset(x: self.bodyTapped ? 165 : 70, y: self.bodyTapped ? 40 : 0)
                         .onTapGesture {
-                            withAnimation(.spring()) {
+                            
+                            
+                            withAnimation(.spring(response: 0.6, dampingFraction: 1.5)) {
                                 chatController.sendNewMessage(content: inputText)
                                 inputText = "" // Clear the input field
                             }
@@ -137,33 +154,31 @@ struct ContentView: View {
         }
     }
 }
-
 struct MessageView: View {
     var message: Message
     var body: some View {
-        Group {
+        HStack {
             if message.isUser {
-                HStack {
-                    Spacer()
-                    Text(message.content)
-                        .padding()
-                        .background(Color.blue) // User message is blue
-                        .foregroundColor(Color.white)
-                        .cornerRadius(20)
-                }
+                Spacer()
+                Text(message.content)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(Color.white)
+                    .cornerRadius(20)
             } else {
-                HStack {
-                    Text(message.content)
-                        .padding()
-                        .background(Color.gray) // Bot message is gray
-                        .foregroundColor(Color.white)
-                        .cornerRadius(20)
-                    Spacer()
-                }
+                Text(message.content)
+                    .padding()
+                    .background(Color.gray)
+                    .foregroundColor(Color.white)
+                    .cornerRadius(20)
+                Spacer()
             }
         }
+        .padding(5)
+        .zIndex(/*@START_MENU_TOKEN@*/1.0/*@END_MENU_TOKEN@*/)
     }
 }
+
 
 // Keyboard height publisher to observe keyboard changes
 extension Publishers {
