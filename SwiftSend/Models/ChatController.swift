@@ -82,6 +82,13 @@ func convertToCoordinates(address: String, completion: @escaping (_ coordinates:
     }
 }
 
+func getTodayDateString() -> String {
+    let today = Date()
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd" // Format to extract only YYYY-MM-DD
+    return dateFormatter.string(from: today)
+}
+
 
 class ChatController: ObservableObject {
     @Published var openAI: OpenAI?
@@ -126,16 +133,45 @@ class ChatController: ObservableObject {
                 print("Latitude: \(Lat), Longitude: \(Long)")
                 
                 // Make SurfAPI immutable
+                let todaysDate = getTodayDateString()
                 let SurfAPI = SurfAPI(latitude: Lat, longitude: Long)
-                
+                let StormGlassAPI = StormGlassAPI(lat: Lat, lng: Long, startDate: todaysDate)
                 // Use Task for handling async code
+                
+                func extractTides(from data: [[String: Any]], tideType: String) -> [(time: String, height: Double)] {
+                    return data.compactMap { entry in
+                        if let type = entry["type"] as? String, type == tideType,
+                           let time = entry["time"] as? String,
+                           let height = entry["height"] as? Double {
+                            return (time: time, height: height)  // Return a tuple with time and height
+                        }
+                        return nil  // If the type doesn't match, or if time/height is missing, return nil
+                    }
+                }
+
                 Task {
                     do {
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
                             // Fetch the weather data
-                            if let data = try await SurfAPI.fetchWeatherData() {
-                                // After fetching weather data, create the response using fetched data
-                                
-                                let weatherResponse: [String: Any] = [
+                        if let data = try await SurfAPI.fetchWeatherData(), let stormdata = try await StormGlassAPI.fetchTideData(){
+                            // Extract low and high tides from stormdata
+                               let lowTides = extractTides(from: stormdata, tideType: "low")
+                               let highTides = extractTides(from: stormdata, tideType: "high")
+                               
+                               // Create the weather response using the fetched data and tide data
+                               let weatherResponse: [String: Any] = [
+                                   "lowTide1": lowTides.first.map { "\($0.time) - Height: \($0.height)" } ?? "No data", // First low tide (time and height)
+                                   "lowTide2": lowTides.count > 1 ? "\(lowTides[1].time) - Height: \(lowTides[1].height)" : "No data", // Second low tide (time and height)
+                                   "highTide1": highTides.first.map { "\($0.time) - Height: \($0.height)" } ?? "No data", // First high tide (time and height)
+                                   "highTide2": highTides.count > 1 ? "\(highTides[1].time) - Height: \(highTides[1].height)" : "No data", // Second high tide (time and height)
                                     "location": location,
                                     "latitude": Lat,
                                     "longitude": Long,
@@ -151,6 +187,8 @@ class ChatController: ObservableObject {
                                     "swellWavePeriodMax": data.daily.swellWavePeriodMax.first ?? "No data",
                                     "swellWavePeakPeriodMax": data.daily.swellWavePeakPeriodMax.first ?? "No data"
                                 ]
+                                
+                                
                                 print(weatherResponse)
                                 
                                 // Switch back to the main thread for completion
@@ -362,7 +400,7 @@ class ChatController: ObservableObject {
                                         }
                                     }
                                 }
-                            } 
+                            }
                             if functionName == "get_surf_conditions"{
                                 // Parse the arguments from JSON
                                 if let data = functionArgs.data(using: .utf8),
@@ -375,6 +413,13 @@ class ChatController: ObservableObject {
                                     self.getSurf(for: location) { surfGet in
                                         // Extract data from the weatherResponse dictionary
                                         if let location = surfGet["location"] as? String,
+                                           
+                                           let lowTide1 = surfGet["lowTide1"] as? String,
+                                           let lowTide2 = surfGet["lowTide2"] as? String,
+                                           let highTide1 = surfGet["highTide1"] as? String,
+                                           let highTide2 = surfGet["highTide2"] as? String,
+
+                                           
                                            let waveHeight = surfGet["waveHeightMax"] as? Float,
                                            let waveDirection = surfGet["waveDirectionDominant"] as? Float,
                                            let wavePeriod = surfGet["wavePeriodMax"] as? Float,
@@ -387,6 +432,7 @@ class ChatController: ObservableObject {
                                            let swellWavePeriod = surfGet["swellWavePeriodMax"] as? Float,
                                            let swellWavePeakPeriod = surfGet["swellWavePeakPeriodMax"] as? Float {
 
+                                           
 
                                             // Ouput Message
                                             let weatherMessage =
@@ -403,6 +449,10 @@ class ChatController: ObservableObject {
                                                 - Swell Wave Direction: \(swellWaveDirection)°
                                                 - Swell Wave Period: \(swellWavePeriod)s
                                                 - Swell Wave Peak Period: \(swellWavePeakPeriod)s
+                                                - Low Tide 1: \(lowTide1) meters
+                                                - Low Tide 1: \(lowTide2) meters
+                                                - High Tide 1: \(highTide1) meters
+                                                - High Tide 2: \(highTide2) meters
                                                 """
                                             print(weatherMessage)
                                             // Reinforce chatprompt

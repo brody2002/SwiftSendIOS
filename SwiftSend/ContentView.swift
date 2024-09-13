@@ -46,22 +46,13 @@ struct ContentView: View {
                             ScrollView {
                                 ForEach(chatController.messages, id: \.ID) { message in
                                     MessageView(message: message)
+                                        
                                         .padding(5)
                                          // Differentiate by color
                                         .cornerRadius(20)
-                                        .transition(message.isUser ? .move(edge: .trailing) : .move(edge: .leading)) // Transition based on the message type
+                                        .transition(message.isUser ? .move(edge: .bottom) : .move(edge: .leading)) // Transition based on the message type
                                         .animation(.spring(), value: chatController.messages) // Animate the changes
-                                        .onAppear {
-                                            if message.isUser {
-                                                print("\n")
-                                                print(message)
-                                                print("\n")
-                                            } else {
-                                                print("\n\n")
-                                                print(message)
-                                                print("\n\n")
-                                            }
-                                        }
+                                        
                                 }
                             }
                             Divider()

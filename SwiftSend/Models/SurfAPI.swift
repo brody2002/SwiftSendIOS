@@ -12,7 +12,7 @@ struct SurfAPI {
     let url: URL
 
     init(latitude: Double, longitude: Double) {
-        self.url = URL(string:  "https://marine-api.open-meteo.com/v1/marine?latitude=37.7749&longitude=-122.4194&daily=wave_height_max,wave_direction_dominant,wave_period_max,wind_wave_height_max,wind_wave_direction_dominant,wind_wave_period_max,wind_wave_peak_period_max,swell_wave_height_max,swell_wave_direction_dominant,swell_wave_period_max,swell_wave_peak_period_max&length_unit=imperial&wind_speed_unit=mph&timezone=America%2FLos_Angeles&format=flatbuffers")!
+        self.url = URL(string:  "https://marine-api.open-meteo.com/v1/marine?latitude=\(latitude)&longitude=\(longitude)&daily=wave_height_max,wave_direction_dominant,wave_period_max,wind_wave_height_max,wind_wave_direction_dominant,wind_wave_period_max,wind_wave_peak_period_max,swell_wave_height_max,swell_wave_direction_dominant,swell_wave_period_max,swell_wave_peak_period_max&length_unit=imperial&wind_speed_unit=mph&timezone=America%2FLos_Angeles&format=flatbuffers")!
     }
 
     func fetchWeatherData() async throws -> WeatherData? {
