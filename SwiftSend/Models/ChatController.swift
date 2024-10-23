@@ -159,15 +159,6 @@ class ChatController: ObservableObject {
 
                 Task {
                     do {
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
                             // Fetch the weather data
                         if let data = try await SurfAPI.fetchWeatherData(), let stormdata = try await StormGlassAPI.fetchTideData(){
                             // Extract low and high tides from stormdata
@@ -254,7 +245,7 @@ class ChatController: ObservableObject {
 
     func getBotReply() {
         // Map `Message` to `ChatCompletionMessageParam`
-        let chatPrompt = "You are a helpful chatbot assistant that tells users mainly surf conditions. For directions say give numeric value as well as the direction its closest facing to. But keep the numberic values. Keep everything very short and concise. Avoid wordy vocabulary and mention maybe 3-4 most important bits of info"
+        let chatPrompt = "You are a helpful chatbot assistant that tells users mainly surf conditions. You can also tell users the current weather forecast if they want it ie temperature in farenheit or celcius. When it comes to surf, For directions say give numeric value as well as the direction its closest facing to. But keep the numberic values. Keep everything very short and concise. Avoid wordy vocabulary and mention maybe 3-4 most important bits of info"
         let userMessages = self.messages.compactMap { message -> ChatQuery.ChatCompletionMessageParam? in
             return ChatQuery.ChatCompletionMessageParam(
                 role: message.isUser ? .user : .assistant,
@@ -331,7 +322,7 @@ class ChatController: ObservableObject {
                     guard let choice = success.choices.first else {
                         return
                     }
-
+                    print("CHOICE: \(choice)")
                     // if assistant  message
                     if case let .assistant(assistantMessage) = choice.message {
                         // Check if it involves a function call
@@ -360,11 +351,11 @@ class ChatController: ObservableObject {
                                                 
                                                 // Format the message string
                                                 let weatherMessage = "The current temperature in \(location) is \(temperature) degrees \(unit)."
-                                                
+                                                print("\n\n\nWEATHER MESSAGE: \(weatherMessage)\n\n\n")
                                                 // Unwrap both system message and assistant message before using them in the array
                                                 if let followUpSystemMessage = ChatQuery.ChatCompletionMessageParam(
                                                         role: .system,
-                                                        content: chatPrompt
+                                                        content: "Tell the user what the weather forecast will be like today given that the location is \(location) the temperature is \(temperature) in \(unit)s"
                                                     ),
                                                    let assistantMessageParam = ChatQuery.ChatCompletionMessageParam(
                                                         role: .assistant,
@@ -394,8 +385,10 @@ class ChatController: ObservableObject {
                                                                     }
                                                                 } else {
                                                                     // Handle the case where content is nil (optional)
-                                                                    DispatchQueue.main.async {
-                                                                        self.messages.append(Message(content: "No content available", isUser: false))
+                                                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.9)){
+                                                                        DispatchQueue.main.async {
+                                                                            self.messages.append(Message(content: "No content available", isUser: false))
+                                                                        }
                                                                     }
                                                                 }
                                                             }
@@ -414,7 +407,8 @@ class ChatController: ObservableObject {
                                     }
                                 }
                             }
-                            if functionName == "get_surf_conditions"{
+                            else if functionName == "get_surf_conditions"{
+                                print("enters surf")
                                 // Parse the arguments from JSON
                                 if let data = functionArgs.data(using: .utf8),
                                    let json = try? JSONSerialization.jsonObject(with: data, options: []),
@@ -467,8 +461,8 @@ class ChatController: ObservableObject {
                                                 - High Tide 1: \(highTide1) ft
                                                 - High Tide 2: \(highTide2) ft
                                                 """
-                                            print("\n\n\(weatherMessage)\n\n")
-                                            
+                                           
+                                            print("\n\n\nSURF FORECAST MESSAGE: \(weatherMessage)\n\n\n")
                                             
                                             
                                             
@@ -499,19 +493,23 @@ class ChatController: ObservableObject {
                                                             // Safely unwrap the content to make sure it's non-optional before using it
                                                             if let content = followUpChoice.message.content, case let .string(messageContent) = content {
                                                                             // Handle the string content
-                                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.9)){
+                                                                
                                                                     
-                                                                    DispatchQueue.main.async {
+                                                                DispatchQueue.main.async {
+                                                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.9)){
                                                                         self.messages.append(Message(content: messageContent, isUser: false))
                                                                     }
                                                                 }
+                                                                
                                                             } else {
                                                                 // Handle the case where content is nil (optional)
-                                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.9)){
+                                                               
                                                                     DispatchQueue.main.async {
-                                                                        self.messages.append(Message(content: "No content available", isUser: false))
+                                                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.9)){
+                                                                            self.messages.append(Message(content: "No content available", isUser: false))
+                                                                        }
                                                                     }
-                                                                }
+                                                                
                                                             }
                                                         }
                                                     case .failure(let followUpFailure):
@@ -531,9 +529,11 @@ class ChatController: ObservableObject {
                             }else {
                                 // If it's a different function call, handle it here (add custom logic)
                                 print("Unhandled function call: \(functionName)")
-//                                DispatchQueue.main.async {
-//                                    self.messages.append(Message(content: "Function call for \(functionName) not handled.", isUser: false))
-//                                }
+                                DispatchQueue.main.async {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.9)){
+                                        self.messages.append(Message(content: "Function call for \(functionName) not handled.", isUser: false))
+                                    }
+                                }
                             }
                         } else if let content = assistantMessage.content {
                             // Handle regular assistant message (fallback if no function call or content available)
