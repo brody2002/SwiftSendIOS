@@ -1,22 +1,21 @@
 import SwiftUI
 import OpenAI
 import Combine
+import Wavelike
 
-struct Message : Equatable {
-    var ID: UUID = .init()
-    var content: String
-    var isUser: Bool
-}
+
 
 struct ContentView: View {
     @State private var apiKey: String? = nil
     @State var bodyTapped: Bool = false
     @State var inputText: String = ""
-    @State private var keyboardHeight: CGFloat = 0 // Adjusts App for when the Keyboard shows upp
     
-    @StateObject var chatController = ChatController(apiKey: "YOUR_API_KEY") // Use StateObject to observe changes
-    private var cancellable: AnyCancellable?
+    // Adjusts App for when the Keyboard shows upp
+    @State private var keyboardHeight: CGFloat = 0
     
+    // Use StateObject to change the key via onAppear in ContentView
+
+    @ObservedObject private var viewModel = SurfChatModel()
     
     @State var percent = 20.0
     @State var waveOffset = Angle(degrees: 0)
@@ -60,15 +59,37 @@ struct ContentView: View {
                     VStack() {
                         if self.bodyTapped {
                             ScrollView {
-                                ForEach(chatController.messages, id: \.ID) { message in
-                                    MessageView(message: message)
+                                
+                                // display messages.
+                                ForEach(viewModel.displayedMessages, id: \.self){ message in
+                                    if let content = message.content{
+                                        Text(content)
+                                            .padding(5)
+                                            .background(message.role == .user ? Color.blue : Color.gray)
+                                            .foregroundColor(Color.white)
+                                            .cornerRadius(20)
+                                            .transition(message.role == .user ? .move(edge: .trailing) : .move(edge: .leading))
+                                    }
                                         
-                                        .padding(5)
-                                         // Differentiate by color
-                                        .cornerRadius(20)
-                                        .transition(message.isUser ? .move(edge: .trailing) : .move(edge: .leading))
-//                                        
+                                            
+                                    
                                 }
+//                                ForEach(viewModel.displayedMessages, id: \.self) { message in
+//                                    if let content = message.content {
+//                                        Text(content)
+//                                            .padding()
+//                                            .background(message.isUser ? Color.blue : Color.gray)
+//                                            .foregroundColor(Color.white)
+//                                            .cornerRadius(20)
+//                                            .transition(message.isUser ? .move(edge: .trailing) : .move(edge: .leading))
+//                                            .padding(message.role == .user ? .leading : .trailing, 60)
+//                                    }
+//                                }
+                                
+                                if viewModel.isLoading {
+                                    ProgressView()
+                                }
+                                
                             }
                             Divider()
                         }
@@ -109,8 +130,14 @@ struct ContentView: View {
                             
                             
                             withAnimation(.spring(response: 0.6, dampingFraction: 1.5)) {
-                                chatController.sendNewMessage(content: inputText)
-                                inputText = "" // Clear the input field
+                                //send message
+                                
+                                Task {
+                                    await viewModel.send(message: inputText)
+                                    inputText = ""
+                                }
+    
+                                
                             }
                             UIApplication.shared.endEditing()
                         }
@@ -131,51 +158,18 @@ struct ContentView: View {
                 .offset(x: self.bodyTapped ? 100 : 300, y: -340)
                 .onTapGesture {
                     withAnimation(.spring()){
-                        chatController.clearMessages()
+                        //Clear message
+                        viewModel.messageHistory = []
                     }
                 }
             
             
-        }
-        .onAppear {
-            Env.load()
-            // Safely load API key when the view appears
-            if let key = Env.get("OPENAI_API_KEY") {
-                apiKey = key
-                chatController.openAI = OpenAI(apiToken: key) // Set the OpenAI instance
-            } else {
-                print("API Key not found")
-            }
         }
         .onReceive(Publishers.keyboardHeight) { height in
             withAnimation {
                 self.keyboardHeight = height // Update the keyboard height when it changes
             }
         }
-    }
-}
-struct MessageView: View {
-    var message: Message
-    var body: some View {
-        HStack {
-            if message.isUser {
-                Spacer()
-                Text(message.content)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(Color.white)
-                    .cornerRadius(20)
-            } else {
-                Text(message.content)
-                    .padding()
-                    .background(Color.gray)
-                    .foregroundColor(Color.white)
-                    .cornerRadius(20)
-                Spacer()
-            }
-        }
-        .padding(5)
-        .zIndex(/*@START_MENU_TOKEN@*/1.0/*@END_MENU_TOKEN@*/)
     }
 }
 

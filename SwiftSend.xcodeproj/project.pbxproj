@@ -19,6 +19,9 @@
 		964313E52C9223EE00D6DCBD /* SurfAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964313E42C9223EE00D6DCBD /* SurfAPI.swift */; };
 		964313E72C93A74E00D6DCBD /* StormGlassAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964313E62C93A74E00D6DCBD /* StormGlassAPI.swift */; };
 		964313E92C94BCD800D6DCBD /* WaveAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964313E82C94BCD800D6DCBD /* WaveAnimation.swift */; };
+		964559CA2CCF223C00C387C2 /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964559C92CCF223C00C387C2 /* ChatViewModel.swift */; };
+		964559CD2CCF25BD00C387C2 /* Wavelike in Frameworks */ = {isa = PBXBuildFile; productRef = 964559CC2CCF25BD00C387C2 /* Wavelike */; };
+		964559CF2CCFF24E00C387C2 /* ChatMessageParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964559CE2CCFF24E00C387C2 /* ChatMessageParsing.swift */; };
 		96AD8BCF2C89472F00381DAC /* .env in Resources */ = {isa = PBXBuildFile; fileRef = 96AD8BCE2C89472F00381DAC /* .env */; };
 /* End PBXBuildFile section */
 
@@ -34,6 +37,8 @@
 		964313E42C9223EE00D6DCBD /* SurfAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfAPI.swift; sourceTree = "<group>"; };
 		964313E62C93A74E00D6DCBD /* StormGlassAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StormGlassAPI.swift; sourceTree = "<group>"; };
 		964313E82C94BCD800D6DCBD /* WaveAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveAnimation.swift; sourceTree = "<group>"; };
+		964559C92CCF223C00C387C2 /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
+		964559CE2CCFF24E00C387C2 /* ChatMessageParsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageParsing.swift; sourceTree = "<group>"; };
 		96AD8BCE2C89472F00381DAC /* .env */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .env; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -44,6 +49,7 @@
 			files = (
 				964313E12C920C2800D6DCBD /* OpenMeteoSdk in Frameworks */,
 				961EF1372C8901A800E8A5DC /* OpenAI in Frameworks */,
+				964559CD2CCF25BD00C387C2 /* Wavelike in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,6 +99,8 @@
 			children = (
 				961EF1312C88FAB000E8A5DC /* Env.swift */,
 				9628E8392C8F665B00C64B39 /* ChatController.swift */,
+				964559CE2CCFF24E00C387C2 /* ChatMessageParsing.swift */,
+				964559C92CCF223C00C387C2 /* ChatViewModel.swift */,
 				964313E42C9223EE00D6DCBD /* SurfAPI.swift */,
 				964313E62C93A74E00D6DCBD /* StormGlassAPI.swift */,
 				964313E82C94BCD800D6DCBD /* WaveAnimation.swift */,
@@ -119,6 +127,7 @@
 			packageProductDependencies = (
 				961EF1362C8901A800E8A5DC /* OpenAI */,
 				964313E02C920C2800D6DCBD /* OpenMeteoSdk */,
+				964559CC2CCF25BD00C387C2 /* Wavelike */,
 			);
 			productName = SwiftSend;
 			productReference = 961EF1132C88CBB100E8A5DC /* SwiftSend.app */;
@@ -151,6 +160,7 @@
 			packageReferences = (
 				961EF1352C8901A800E8A5DC /* XCRemoteSwiftPackageReference "OpenAI" */,
 				964313DF2C920C2800D6DCBD /* XCRemoteSwiftPackageReference "sdk" */,
+				964559CB2CCF25BD00C387C2 /* XCRemoteSwiftPackageReference "wavelike-ios" */,
 			);
 			productRefGroup = 961EF1142C88CBB100E8A5DC /* Products */;
 			projectDirPath = "";
@@ -183,9 +193,11 @@
 				964313E92C94BCD800D6DCBD /* WaveAnimation.swift in Sources */,
 				961EF1192C88CBB100E8A5DC /* ContentView.swift in Sources */,
 				961EF1322C88FAB000E8A5DC /* Env.swift in Sources */,
+				964559CF2CCFF24E00C387C2 /* ChatMessageParsing.swift in Sources */,
 				961EF1172C88CBB100E8A5DC /* SwiftSendApp.swift in Sources */,
 				964313E72C93A74E00D6DCBD /* StormGlassAPI.swift in Sources */,
 				9628E83A2C8F665B00C64B39 /* ChatController.swift in Sources */,
+				964559CA2CCF223C00C387C2 /* ChatViewModel.swift in Sources */,
 				961EF1252C88CC4200E8A5DC /* UIColors.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -418,6 +430,14 @@
 				kind = branch;
 			};
 		};
+		964559CB2CCF25BD00C387C2 /* XCRemoteSwiftPackageReference "wavelike-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/velos/wavelike-ios";
+			requirement = {
+				branch = develop;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -430,6 +450,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 964313DF2C920C2800D6DCBD /* XCRemoteSwiftPackageReference "sdk" */;
 			productName = OpenMeteoSdk;
+		};
+		964559CC2CCF25BD00C387C2 /* Wavelike */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 964559CB2CCF25BD00C387C2 /* XCRemoteSwiftPackageReference "wavelike-ios" */;
+			productName = Wavelike;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

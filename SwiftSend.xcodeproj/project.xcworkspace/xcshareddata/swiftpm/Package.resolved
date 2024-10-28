@@ -1,6 +1,24 @@
 {
-  "originHash" : "9329437f6df1fed3e43a2c36460302c53ffcc0fb64af5c816c01237d77ffb711",
+  "originHash" : "a824416ccf90f297701d7223b9b66e9f749062dbca16a64cba2fb20c63dc7ecc",
   "pins" : [
+    {
+      "identity" : "callablefunction",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/velos/CallableFunction.git",
+      "state" : {
+        "branch" : "feature/function-updates",
+        "revision" : "338a24c3c90631c8dc4c19e5c44d1cecc0b09b05"
+      }
+    },
+    {
+      "identity" : "endpoints",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/velos/Endpoints.git",
+      "state" : {
+        "revision" : "029e8008e841572ad05bc372681bb4fa576ee292",
+        "version" : "0.3.0"
+      }
+    },
     {
       "identity" : "flatbuffers",
       "kind" : "remoteSourceControl",
@@ -26,6 +44,24 @@
       "state" : {
         "branch" : "main",
         "revision" : "75305e7fadb6a6cd67fd7b17d622f6b337fe5d67"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-syntax.git",
+      "state" : {
+        "revision" : "64889f0c732f210a935a0ad7cda38f77f876262d",
+        "version" : "509.1.1"
+      }
+    },
+    {
+      "identity" : "wavelike-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/velos/wavelike-ios",
+      "state" : {
+        "branch" : "develop",
+        "revision" : "2d75b61993905adceb499440f6ef17b305fd37f3"
       }
     }
   ],

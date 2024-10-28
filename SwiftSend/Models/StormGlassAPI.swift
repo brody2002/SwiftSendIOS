@@ -74,6 +74,7 @@ struct StormGlassAPI{
             // Check for valid HTTP response status
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                 print("Invalid response from server")
+                print("STORM API error code: \(response)")
                 return nil
             }
             
@@ -82,7 +83,7 @@ struct StormGlassAPI{
                 if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                    let tideData = jsonResponse["data"] as? [[String: Any]] {
                     
-                    print("\n\n\nTIDE DATA: \(tideData)\n\n\n")
+//                    print("\n\n\nTIDE DATA: \(tideData)\n\n\n")
                     
                    return tideData
                     
