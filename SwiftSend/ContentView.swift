@@ -58,39 +58,53 @@ struct ContentView: View {
 
                     VStack() {
                         if self.bodyTapped {
-                            ScrollView {
-                                
-                                // display messages.
-                                ForEach(viewModel.displayedMessages, id: \.self){ message in
-                                    if let content = message.content{
-                                        Text(content)
-                                            .padding(5)
-                                            .background(message.role == .user ? Color.blue : Color.gray)
-                                            .foregroundColor(Color.white)
-                                            .cornerRadius(20)
-                                            .transition(message.role == .user ? .move(edge: .trailing) : .move(edge: .leading))
-                                    }
+                            ScrollViewReader { scrollProxy in
+                                ScrollView {
+                                    
+                                    // display messages.
+                                    ForEach(viewModel.displayedMessages, id: \.self){ message in
+                                        HStack{
+                                            if let content = message.content{
+                                                if message.role == .user{
+                                                    Spacer()
+                                                }
+                                                Text(content)
+                                                    .padding(15)
+                                                    .background(message.role == .user ? Color.blue : Color.gray)
+                                                    .foregroundColor(Color.white)
+                                                    .cornerRadius(20)
+                                                    
+                                                if message.role != .user{
+                                                    Spacer()
+                                                }
+                                            }
+                                        }
+                                        .padding()
+                                        .transition(message.role == .user ? .move(edge: .trailing) : .move(edge: .leading))
+                                        Spacer().frame(height: 20)
                                         
                                             
+                                                
+                                        
+                                    }
+
+                                    if viewModel.isLoading {
+                                        ProgressView()
+                                    }
+                                    Color.clear
+                                        .frame(height: 1)
+                                        .id("Bottom")
                                     
                                 }
-//                                ForEach(viewModel.displayedMessages, id: \.self) { message in
-//                                    if let content = message.content {
-//                                        Text(content)
-//                                            .padding()
-//                                            .background(message.isUser ? Color.blue : Color.gray)
-//                                            .foregroundColor(Color.white)
-//                                            .cornerRadius(20)
-//                                            .transition(message.isUser ? .move(edge: .trailing) : .move(edge: .leading))
-//                                            .padding(message.role == .user ? .leading : .trailing, 60)
-//                                    }
-//                                }
-                                
-                                if viewModel.isLoading {
-                                    ProgressView()
+                                .onChange(of: viewModel.displayedMessages.count) { _ in
+                                    // Scroll to the invisible view at the bottom
+                                    print("Changed")
+                                    withAnimation {
+                                        scrollProxy.scrollTo("Bottom", anchor: .bottom)
+                                    }
                                 }
-                                
                             }
+                            
                             Divider()
                         }
                     }

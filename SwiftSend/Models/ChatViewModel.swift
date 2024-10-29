@@ -47,6 +47,7 @@ class SurfChatModel: ObservableObject{
     
     var getSurfFunction = ParseSurfRequest { params in
         
+        print("PARAMS: \(params)\n\n\n")
         // Make SurfAPI immutable
         let todaysDate = getTodayDateString()
         let SurfAPI = SurfAPI(latitude: params.latitude, longitude: params.longitude)
@@ -179,7 +180,7 @@ class SurfChatModel: ObservableObject{
         // Add initial context for date / time and user location
         // TODO: Instead, fetch user location client-side and don't share with llm.
         
-        
+        print("sending message\n\n")
         if messageHistory.isEmpty {
             let dateSystemMessage = Message(role: .system, content: "Today's date is: \(Date().formatted(date: .complete, time: .complete))")
             let locationSystemMessage = Message(role: .system, content: "You are an assistant that helps users learn about current Surf conditions provided that the user provides a location of a beach with water. ")
@@ -194,6 +195,7 @@ class SurfChatModel: ObservableObject{
         }
 
         isLoading = true
+        print("before chatSend")
         let (message, surf) = try! await chat.send(history: messageHistory, functions: getSurfFunction)
         
         
