@@ -4,25 +4,35 @@ import Combine
 import Wavelike
 
 
+@Observable
+class CurrentModel: ObservableObject{
+    var model = "brody35"
+}
+
+
 
 struct ContentView: View {
     @State private var apiKey: String? = nil
     @State var bodyTapped: Bool = false
     @State var inputText: String = ""
     
+    @State var showSettingBarView: Bool = false
+    
     // Adjusts App for when the Keyboard shows upp
     @State private var keyboardHeight: CGFloat = 0
-    
     // Use StateObject to change the key via onAppear in ContentView
 
-    @ObservedObject private var viewModel = SurfChatModel()
+    @StateObject private var viewModel = SurfChatModel()
     
     @State var percent = 20.0
     @State var waveOffset = Angle(degrees: 0)
     
 
     var body: some View {
+        
         ZStack {
+            
+            
             Color(UIColors.background)
                 .ignoresSafeArea()
                 .onTapGesture {
@@ -41,7 +51,29 @@ struct ContentView: View {
                                 waveOffset = Angle(degrees: 360)
                             }
                         }
-
+            
+            VStack{
+                HStack{
+                    ZStack{
+                        Button(action: {
+                            print("chose model")
+                            print("TEST")
+                            
+                                showSettingBarView.toggle()
+                            
+                        }) {
+                            SettingsViewButton()
+                                
+                        }
+                    }
+                    .padding(.leading, 30)
+                    .opacity(self.bodyTapped ? 0 : 1 )
+                    Spacer()
+                    Spacer()
+                }
+                Spacer()
+                Spacer()
+            }
             VStack {
                 Text("SwiftSend")
                     .foregroundColor(.white)
@@ -100,7 +132,7 @@ struct ContentView: View {
                                     // Scroll to the invisible view at the bottom
                                     print("Changed")
                                     withAnimation {
-                                        scrollProxy.scrollTo("Bottom", anchor: .bottom)
+                                        scrollProxy.scrollTo("Bottom")
                                     }
                                 }
                             }
@@ -147,6 +179,7 @@ struct ContentView: View {
                                 //send message
                                 
                                 Task {
+                                    print("sending message")
                                     await viewModel.send(message: inputText)
                                     inputText = ""
                                 }
@@ -178,12 +211,29 @@ struct ContentView: View {
                 }
             
             
+            
+            
+            if showSettingBarView{
+                SettingBarView(showSettingBarView: $showSettingBarView, viewModel: viewModel)
+                    .animation(.easeInOut(duration: 0.5), value: showSettingBarView)
+                    
+                    
+            }
+            
+            
+            
+            
+            
+            
+            
+            
         }
         .onReceive(Publishers.keyboardHeight) { height in
             withAnimation {
                 self.keyboardHeight = height // Update the keyboard height when it changes
             }
         }
+        
     }
 }
 

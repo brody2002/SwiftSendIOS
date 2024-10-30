@@ -25,6 +25,7 @@ func getTodayDateString() -> String {
 
 
 
+
 @MainActor
 
 
@@ -41,7 +42,20 @@ class SurfChatModel: ObservableObject{
 
     
     //Aquire chatGPT 3.5 from Wavelike
-    let chat = Wavelike.model(for: ModelIdentifier(ChatModel.self, id: "brody35"))
+
+    
+    var chat: ChatModel?
+    var selectedModel: String?
+    
+    func updateChat(){
+        if selectedModel == nil{
+            selectedModel = "brody35"
+        }
+        print("model in use -> \(selectedModel!)")
+        
+        chat = Wavelike.model(for: ModelIdentifier(ChatModel.self, id: selectedModel!))
+        print("Newly updated chat: \(chat)🦦")
+    }
     
    
     
@@ -174,7 +188,15 @@ class SurfChatModel: ObservableObject{
     }
     
     func send(message text: String) async {
-
+    
+        
+//        if chat == nil{
+            print("updatingChat")
+            updateChat()
+//        }
+        
+        print("using model type: \(selectedModel!)")
+        
         var messages: [Message] = []
         
         // Add initial context for date / time and user location
@@ -182,9 +204,8 @@ class SurfChatModel: ObservableObject{
         
         print("sending message\n\n")
         if messageHistory.isEmpty {
-            let dateSystemMessage = Message(role: .system, content: "Today's date is: \(Date().formatted(date: .complete, time: .complete))")
-            let locationSystemMessage = Message(role: .system, content: "You are an assistant that helps users learn about current Surf conditions provided that the user provides a location of a beach with water. ")
-            messages = [dateSystemMessage, locationSystemMessage]
+            let dateSystemMessage = Message(role: .system, content: "Today's date is: \(Date().formatted(date: .complete, time: .complete)) You are an assistant that helps users learn about current Surf conditions provided that the user provides a location of a beach with water.")
+            messages = [dateSystemMessage]
         }
 
         let userMessage = Message(role: .user, content: text)
@@ -196,7 +217,8 @@ class SurfChatModel: ObservableObject{
 
         isLoading = true
         print("before chatSend")
-        let (message, surf) = try! await chat.send(history: messageHistory, functions: getSurfFunction)
+        let (message, surf) = try! await chat!.send(history: messageHistory, functions: getSurfFunction)
+        
         
         
         
@@ -228,7 +250,7 @@ class SurfChatModel: ObservableObject{
             let dummyFunction = DummyFunction { _ in return "" }
 
             isLoading = true
-            let (message, _) = try! await chat.send(history: [contextualSystemMessage], functions: dummyFunction)
+            let (message, _) = try! await chat!.send(history: [contextualSystemMessage], functions: dummyFunction)
             isLoading = false
             withAnimation(.spring(response: 0.3, dampingFraction: 0.9)){
                 messageHistory.append(message)
