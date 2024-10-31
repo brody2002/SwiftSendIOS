@@ -11,64 +11,44 @@ struct SettingBarView: View {
     @Binding var showSettingBarView: Bool
     @State var backButtonPressed: Bool = false
     @ObservedObject var viewModel: SurfChatModel
+    @State private var dragOffset = CGSize.zero
     var body: some View {
-        VStack{
-            ZStack{
-                UIColors.body.ignoresSafeArea()
-                
-                
-            }
-            .frame(height: 200)
-                .cornerRadius(20)
-                .overlay{
-                    ZStack{
-                        Button(action: {
-                            withAnimation{
-                                backButtonPressed = true
-                                
-                               
-                                
-                                      showSettingBarView.toggle()
-                                  
-                                  
-                              
-
-                                                              
-                                
-                            }
+    
+            VStack{
+                ZStack{
+                    UIColors.body.ignoresSafeArea()
+                    
+                    
+                }
+                .frame(height: 200)
+                    .cornerRadius(20)
+                    .overlay{
+                        ZStack{
                             
-                        } ,label: {
-                            ZStack{
-                                Rectangle()
-                                    .fill(UIColors.background)
-                                    .frame(width: 30, height: 30)
-                                    .cornerRadius(4)
-                                Image(systemName: "lessthan")
+                            
+                            HStack{
+                                Text("Model Select:")
+                                    .rotationEffect(Angle(degrees: 270))
                                     .foregroundColor(Color.black)
-                                    .font(.system(size: 30))
-                                    
+                                    .font(.system(size: 19))
+                                    .bold()
+                                
+                                Spacer(minLength: 10)
+                                ModelSelectView(viewModel: viewModel)
+                                Spacer()
                                     
                             }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                            .padding(.leading, 40)
-                            .padding(.top, 30)
-                            
-                        })
-                        
-                        HStack{
-                            
-                            Spacer(minLength: 120)
-                            ModelSelectView(viewModel: viewModel)
-                            Spacer()
-                                
                         }
                     }
-                }
+                        
                     
-                
-            Spacer()
-            Spacer()
-        }
+                Spacer()
+                Spacer()
+            }
+            
+        
+        
+        
     }
 }
 

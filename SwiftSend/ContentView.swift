@@ -6,7 +6,7 @@ import Wavelike
 
 @Observable
 class CurrentModel: ObservableObject{
-    var model = "brody35"
+    var model = "chatgpt40"
 }
 
 
@@ -26,6 +26,8 @@ struct ContentView: View {
     
     @State var percent = 20.0
     @State var waveOffset = Angle(degrees: 0)
+    
+    @State var dragOffset = CGSize.zero
     
 
     var body: some View {
@@ -58,16 +60,19 @@ struct ContentView: View {
                         Button(action: {
                             print("chose model")
                             print("TEST")
-                            
+                            withAnimation(.spring(response: 0.4, dampingFraction: 1.0)){
                                 showSettingBarView.toggle()
+                            }
+                                
                             
                         }) {
                             SettingsViewButton()
+                                .offset(y: showSettingBarView || bodyTapped ? -200: 0 )
+                                
                                 
                         }
                     }
                     .padding(.leading, 30)
-                    .opacity(self.bodyTapped ? 0 : 1 )
                     Spacer()
                     Spacer()
                 }
@@ -79,6 +84,7 @@ struct ContentView: View {
                     .foregroundColor(.white)
                     .font(.system(size: 50))
                     .offset(y: self.bodyTapped ? -500 : -200)
+                    .offset(x: self.showSettingBarView ? -600 : 0)
                     .bold()
 
                 ZStack {
@@ -147,6 +153,7 @@ struct ContentView: View {
                     .onTapGesture {
                         withAnimation(.spring()) {
                             self.bodyTapped = true
+                            self.showSettingBarView = false
                         }
                         UIApplication.shared.endEditing() // Dismiss keyboard when tapping outside
                     }
@@ -180,7 +187,11 @@ struct ContentView: View {
                                 
                                 Task {
                                     print("sending message")
-                                    await viewModel.send(message: inputText)
+                                    do {
+                                        try await viewModel.send(message: inputText)
+                                    } catch {
+                                        print("got error: \(error)")
+                                    }
                                     inputText = ""
                                 }
     
@@ -213,12 +224,38 @@ struct ContentView: View {
             
             
             
-            if showSettingBarView{
-                SettingBarView(showSettingBarView: $showSettingBarView, viewModel: viewModel)
-                    .animation(.easeInOut(duration: 0.5), value: showSettingBarView)
+            SettingBarView(showSettingBarView: $showSettingBarView, viewModel: viewModel)
+                .offset(y: showSettingBarView && !bodyTapped ? dragOffset.height : -UIScreen.main.bounds.height)
+                .gesture(
+                    DragGesture()
+                        .onChanged { value in
+                            if value.translation.height < 0 {
+                                self.dragOffset.height = value.translation.height
+                            }
+                        }
+                        .onEnded { value in
+                            // Set a threshold for the drag
+                            if value.translation.height < -40 { // Adjust this threshold as needed
+                                withAnimation(.spring(response: 0.4, dampingFraction: 1.0)) {
+                                    self.showSettingBarView = false
+                                    self.dragOffset = .zero
+                                }
+                            } else {
+                                // Reset if the drag is not far enough
+                                withAnimation(.spring(response: 0.4, dampingFraction: 1.0)) {
+                                    self.dragOffset = .zero
+                                }
+                            }
+                        }
+                )
+
+               
                     
                     
-            }
+                    
+
+                    
+            
             
             
             
@@ -229,7 +266,7 @@ struct ContentView: View {
             
         }
         .onReceive(Publishers.keyboardHeight) { height in
-            withAnimation {
+            withAnimation(.spring(response: 0.4, dampingFraction: 1.0)){
                 self.keyboardHeight = height // Update the keyboard height when it changes
             }
         }

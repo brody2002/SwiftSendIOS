@@ -49,7 +49,7 @@ class SurfChatModel: ObservableObject{
     
     func updateChat(){
         if selectedModel == nil{
-            selectedModel = "brody35"
+            selectedModel = "chatgpt40"
         }
         print("model in use -> \(selectedModel!)")
         
@@ -187,7 +187,7 @@ class SurfChatModel: ObservableObject{
         return ""
     }
     
-    func send(message text: String) async {
+    func send(message text: String) async throws {
     
         
 //        if chat == nil{
@@ -217,7 +217,7 @@ class SurfChatModel: ObservableObject{
 
         isLoading = true
         print("before chatSend")
-        let (message, surf) = try! await chat!.send(history: messageHistory, functions: getSurfFunction)
+        let (message, surf) = try await chat!.send(history: messageHistory, functions: getSurfFunction)
         
         
         
@@ -250,7 +250,7 @@ class SurfChatModel: ObservableObject{
             let dummyFunction = DummyFunction { _ in return "" }
 
             isLoading = true
-            let (message, _) = try! await chat!.send(history: [contextualSystemMessage], functions: dummyFunction)
+            let (message, _) = try await chat!.send(history: [contextualSystemMessage], functions: dummyFunction)
             isLoading = false
             withAnimation(.spring(response: 0.3, dampingFraction: 0.9)){
                 messageHistory.append(message)

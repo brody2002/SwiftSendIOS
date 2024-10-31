@@ -12,8 +12,9 @@ import SwiftUI
 struct ModelSelectView: View {
     
     @ObservedObject var viewModel: SurfChatModel
-    @State private var selectedModel = ""
-    @State private var testList = ["brody35","brody4o","metallama","Cohere llm", "somehuggingFace"]
+    @State private var selectedVisualModel = "ChatGPT 4.0"
+    @State private var modelNameList: [String: String] = ["ChatGPT 4.0": "chatgpt40", "ChatGPT 3.5": "chatgpt35", "Mixtral 4.67B": "mixtral46b"]
+
     var body: some View {
         ZStack{
             Rectangle()
@@ -25,8 +26,8 @@ struct ModelSelectView: View {
                     
                     ZStack{
                         Form{
-                            Picker("select Model", selection: $selectedModel){
-                                ForEach(testList, id: \.self){ model in
+                            Picker("select Model", selection: $selectedVisualModel){
+                                ForEach(modelNameList.keys.sorted(), id: \.self){ model in
                                     Text(model)
                                     
                                 }
@@ -40,19 +41,19 @@ struct ModelSelectView: View {
                         
                     }
                 })
-            Text("Current selection: \(viewModel.selectedModel)")
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
-                                            .padding(.top, 100)
+//            Text("Current selection: \(viewModel.selectedModel)")
+//                                            .font(.caption)
+//                                            .foregroundColor(.gray)
+//                                            .padding(.top, 100)
             
             
         }
-        .onChange(of: selectedModel){
+        .onChange(of: selectedVisualModel){
             print("new picking value")
-            viewModel.selectedModel = selectedModel
+            viewModel.selectedModel = selectedVisualModel
         }
         .onAppear{
-            selectedModel = viewModel.selectedModel ?? "brody35"
+            selectedVisualModel = viewModel.selectedModel ?? "chatgpt40"
         }
         
     }
