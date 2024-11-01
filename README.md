@@ -5,7 +5,7 @@ This app has access to multiple LLMs that support tool calling that can be swapp
 
 ### Click Here to see the video Demo
 
-<a href="https://youtube.com/shorts/GqMIIWCu9wA?feature=share" target="_blank">
+<a href="https://youtu.be/Oe2yiRE6eB8" target="_blank">
     <img src="https://github.com/user-attachments/assets/f3eea9d8-5e3f-4ac9-b6e3-b7f4ec344c05" alt="Watch the Video" width="500">
 </a>
 
